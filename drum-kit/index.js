@@ -11,6 +11,7 @@ for (let i = 0; i < NUM_OF_DRUMS; i++) {
 }
 
 function handleClick() {
+  buttonAnimation(this.innerHTML);
   switch (this.innerHTML) {
     case "w":
       drumNoise = new Audio("./sounds/tom-1.mp3");
@@ -38,45 +39,68 @@ function handleClick() {
       console.log("no drum for this button :/");
       break;
   }
+
+  drumNoise.play();
 }
 
 /**
  * Detecting keyboard press
  */
-
 document.addEventListener("keydown", function (event) {
   makeSound(event.key);
 });
 
 function makeSound(key) {
-  let drumNoise;
   switch (key) {
     case "w":
-      drumNoise = new Audio("./sounds/tom-1.mp3");
+      let tom1 = new Audio("./sounds/tom-1.mp3");
+      tom1.play();
+      buttonAnimation(key);
       break;
     case "a":
-      drumNoise = new Audio("./sounds/tom-2.mp3");
+      let tom2 = new Audio("./sounds/tom-2.mp3");
+      tom2.play();
+      buttonAnimation(key);
       break;
     case "s":
-      drumNoise = new Audio("./sounds/tom-3.mp3");
+      let tom3 = new Audio("./sounds/tom-3.mp3");
+      tom3.play();
+      buttonAnimation(key);
       break;
     case "d":
-      drumNoise = new Audio("./sounds/tom-4.mp3");
+      let tom4 = new Audio("./sounds/tom-4.mp3");
+      tom4.play();
+      buttonAnimation(key);
       break;
     case "j":
-      drumNoise = new Audio("./sounds/snare.mp3");
+      let snare = new Audio("./sounds/snare.mp3");
+      snare.play();
+      buttonAnimation(key);
       break;
     case "k":
-      drumNoise = new Audio("./sounds/crash.mp3");
+      let crash = new Audio("./sounds/crash.mp3");
+      crash.play();
+      buttonAnimation(key);
       break;
     case "l":
-      drumNoise = new Audio("./sounds/kick-bass.mp3");
+      let kick = new Audio("./sounds/kick-bass.mp3");
+      kick.play();
+      buttonAnimation(key);
       break;
 
     default:
       console.log("no drum for this button :/");
       break;
   }
+}
 
-  drumNoise.play(); // ik it will not play if valid button is not clicked
+// button animation
+function buttonAnimation(currentKey) {
+  let activeButton = document.querySelector("." + currentKey);
+  activeButton.classList.add("pressed"); // give it pressed effect
+
+  // remove pressed effect
+  setTimeout(function () {
+    activeButton.classList.remove("pressed");
+  }, 100);
 }
