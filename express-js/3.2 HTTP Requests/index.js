@@ -17,3 +17,12 @@ app.get("/contact", (req, res) => {
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });
+
+//  *** REQUEST VOCAB ***
+/**
+ * GET    [=] request resource from server or database
+ * POST   [=] sending resource from server or database
+ * PUT    [=] replace resource  - (amazon sends u a completely new product if yours is broken)
+ * PATCH  [=] patch up resource - (amazon sends u a certain part to fix ur product )
+ * DELETE [=] delete resource from server or database
+ */
