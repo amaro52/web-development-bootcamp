@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import pg from "pg";
-import { database, host, password, user } from "pg/lib/defaults";
+import config from "./config.js";
 
 const app = express();
 const port = 3000;
@@ -11,6 +11,19 @@ const db = new pg.Client({
   database: "world",
   password: config.PASSWORD,
   port: 5432,
+});
+
+db.connect(); // connect to database
+
+let quiz = [];
+db.query("SELECT * FROM flags", (err, res) => {
+  if (err) {
+    console.log("Error execiting query", err.stack);
+  } else {
+    quiz = res.rows;
+  }
+
+  db.end(); // close off connections
 });
 
 let totalCorrect = 0;
