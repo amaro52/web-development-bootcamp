@@ -8,7 +8,7 @@ const port = 3000;
 const db = new pg.Client({
   user: "postgres",
   host: "localhost",
-  database: "world",
+  database: "flags",
   password: config.PASSWORD,
   port: 5432,
 });
@@ -18,7 +18,7 @@ db.connect(); // connect to database
 let quiz = [];
 db.query("SELECT * FROM flags", (err, res) => {
   if (err) {
-    console.log("Error execiting query", err.stack);
+    console.log("Error executing query", err.stack);
   } else {
     quiz = res.rows;
   }
@@ -46,7 +46,7 @@ app.get("/", (req, res) => {
 app.post("/submit", (req, res) => {
   let answer = req.body.answer.trim();
   let isCorrect = false;
-  if (currentQuestion.capital.toLowerCase() === answer.toLowerCase()) {
+  if (currentQuestion.name.toLowerCase() === answer.toLowerCase()) {
     totalCorrect++;
     console.log(totalCorrect);
     isCorrect = true;
