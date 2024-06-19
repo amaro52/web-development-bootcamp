@@ -13,9 +13,9 @@ CREATE TABLE contact_detail (
 
 -- Data --
 INSERT INTO student (first_name, last_name)
-VALUES ('Angela', 'Yu');
+VALUES ('Amogh', 'Maroju');
 INSERT INTO contact_detail (id, tel, address)
-VALUES (1, '+123456789', '123 App Brewery Road');
+VALUES (1, '+123456789', '123 Main Street');
 
 -- Join --
 SELECT * 
