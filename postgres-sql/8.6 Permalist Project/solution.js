@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import pg from "pg";
+import config from "./config.js";
 
 const app = express();
 const port = 3000;
@@ -9,7 +10,7 @@ const db = new pg.Client({
   user: "postgres",
   host: "localhost",
   database: "permalist",
-  password: "123456",
+  password: config.PASSWORD,
   port: 5432,
 });
 db.connect();
@@ -17,15 +18,17 @@ db.connect();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-let items = [
-  { id: 1, title: "Buy milk" },
-  { id: 2, title: "Finish homework" },
-];
+let items = [];
+//  = [
+//   { id: 1, title: "Buy milk" },
+//   { id: 2, title: "Finish homework" },
+// ];
 
 app.get("/", async (req, res) => {
   try {
     const result = await db.query("SELECT * FROM items ORDER BY id ASC");
     items = result.rows;
+    console.log(items);
 
     res.render("index.ejs", {
       listTitle: "Today",
