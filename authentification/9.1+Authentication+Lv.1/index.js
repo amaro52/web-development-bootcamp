@@ -9,7 +9,7 @@ const port = 3000;
 const db = new pg.Client({
   user: "postgres",
   host: "localhost",
-  database: "world",
+  database: "secrets",
   password: config.PASSWORD,
   port: 5432,
 });
@@ -31,20 +31,57 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", async (req, res) => {
-  let username = req.body.username;
+  let email = req.body.username;
   let password = req.body.password;
 
-  // put username and password into database
+  try {
+    // check if email already exists
+    const checkResult = await db.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
 
-  res.redirect("/"); // send back to home page so they log in
+    if (checkResult.rows.length > 0) {
+      res.send("Email already exists. Try logging in.");
+    } else {
+      // put username and password into database
+      await db.query("INSERT INTO users (email, password) VALUES ($1, $2)", [
+        email,
+        password,
+      ]);
+
+      res.redirect("/"); // send back to home page so they log in
+    }
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 app.post("/login", async (req, res) => {
-  let username = req.body.username;
+  let email = req.body.username;
   let password = req.body.password;
 
   // check that username and password are in database
-  res.redirect("/"); // send back to home page so they log in
+  try {
+    const result = await db.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
+
+    // check if in database
+    if (result.rows.length > 0) {
+      const user = result.rows[0];
+
+      // check if password is correct
+      if (password === user.password) {
+        res.render("secrets.ejs"); // correct password -> reveal secret
+      } else {
+        res.send("Incorrect Password"); // incorrect password
+      }
+    } else {
+      res.send("User not found"); // username does not exist
+    }
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 app.listen(port, () => {
