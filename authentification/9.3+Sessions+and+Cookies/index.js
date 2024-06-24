@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(
   session({
-    secret: '"TOPSECRETWORD',
+    secret: "TOPSECRETWORD",
     resave: false,
     saveUninitialized: true,
     cookie: {
@@ -76,11 +76,18 @@ app.post("/register", async (req, res) => {
           console.error("Error hashing password:", err);
         } else {
           console.log("Hashed Password:", hash);
-          await db.query(
-            "INSERT INTO users (email, password) VALUES ($1, $2)",
+          const result = await db.query(
+            "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *",
             [email, hash]
           );
-          res.render("secrets.ejs");
+
+          const newUser = result.rows[0];
+          // req.login automatically autheticates user; login is part of passport
+          req.login(newUser, (err) => {
+            console.log(err); // if there is an err
+
+            res.redirect("/secrets");
+          });
         }
       });
     }
