@@ -5,16 +5,16 @@ import bcrypt from "bcrypt";
 import passport from "passport";
 import { Strategy } from "passport-local";
 import session from "express-session";
-import env from "dotenv";
+import GoogleStrategy from "passport-google-oauth2";
+import config from "./config.js";
 
 const app = express();
 const port = 3000;
 const saltRounds = 10;
-env.config();
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: config.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
   })
@@ -27,11 +27,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const db = new pg.Client({
-  user: process.env.PG_USER,
-  host: process.env.PG_HOST,
-  database: process.env.PG_DATABASE,
-  password: process.env.PG_PASSWORD,
-  port: process.env.PG_PORT,
+  user: config.PG_USER,
+  host: config.PG_HOST,
+  database: config.PG_DATABASE,
+  password: config.PG_PASSWORD,
+  port: config.PG_PORT,
 });
 db.connect();
 
@@ -46,6 +46,13 @@ app.get("/login", (req, res) => {
 app.get("/register", (req, res) => {
   res.render("register.ejs");
 });
+
+app.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  })
+);
 
 app.get("/logout", (req, res) => {
   req.logout(function (err) {
@@ -64,6 +71,14 @@ app.get("/secrets", (req, res) => {
     res.redirect("/login");
   }
 });
+
+app.get(
+  "/auth/google/secrets",
+  passport.authenticate("google", {
+    successRedirect: "/secrets",
+    failureRedirect: "/login",
+  })
+);
 
 app.post(
   "/login",
@@ -106,7 +121,9 @@ app.post("/register", async (req, res) => {
   }
 });
 
+// PASSPORT-LOCAL STRATEGY
 passport.use(
+  "local",
   new Strategy(async function verify(username, password, cb) {
     try {
       const result = await db.query("SELECT * FROM users WHERE email = $1 ", [
@@ -137,6 +154,42 @@ passport.use(
       console.log(err);
     }
   })
+);
+
+// PASSPORT-GOOGLE STRATEGY
+passport.use(
+  "google",
+  new GoogleStrategy(
+    {
+      clientID: config.GOOGLE_CLIENT_ID,
+      clientSecret: config.GOOGLE_CLIENT_SECRET,
+      callbackURL: "http://localhost:3000/auth/google/secrets",
+      userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
+    },
+    async (accessToken, refreshToken, profile, cb) => {
+      // console.log(profile);
+      try {
+        const result = await db.query("SELECT * FROM users WHERE email = $1", [
+          profile.email,
+        ]);
+
+        // if no rows (no existing users)
+        if (result.rowCount === 0) {
+          // set password as "google" because that is the point, we do not need to store it when google OAuths for us
+          // can also set password as the user id
+          const newUser = await db.query(
+            "INSERT INTO users (email, password) VALUES ($1, $1)",
+            [profile.email, "google"]
+          );
+          return cb(null, newUser.rows[0]);
+        } else {
+          return cb(null, result.rows[0]);
+        }
+      } catch (error) {
+        return cb(err); // there is already a user; get the first one
+      }
+    }
+  )
 );
 
 passport.serializeUser((user, cb) => {
