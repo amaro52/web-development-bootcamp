@@ -54,7 +54,6 @@ app.get("/logout", (req, res) => {
     res.redirect("/");
   });
 });
-
 app.get("/secrets", (req, res) => {
   // console.log(req.user);
   if (req.isAuthenticated()) {
